@@ -16,14 +16,14 @@
 import json as jsonlib
 import yaml as yamllib
 
+import muranoapi.dsl.helpers as helpers
 import muranoapi.dsl.murano_object as murano_object
 
 
 class ResourceManager(murano_object.MuranoObject):
     def initialize(self, package_loader, _context, _class):
-        if _class is None:
-            _class = _context.get_data('$')
-        self._package = package_loader.get_package(_class.type.package.name)
+        murano_class = helpers.get_type(_context)
+        self._package = package_loader.get_package(murano_class.package.name)
 
     def string(self, name):
         path = self._package.get_resource(name)
