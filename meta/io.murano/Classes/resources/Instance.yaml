@@ -58,6 +58,7 @@ Workflow:
           )
       - $.createDefaultInstanceSecurityGroupRules($securityGroupName)
 
+      - $.ensureNetworksDeployed()
       - If: $.networks.useEnvironmentNetwork
         Then:
           $.joinNet($.environment.defaultNetworks.environment, $securityGroupName)
@@ -89,6 +90,16 @@ Workflow:
       - $.ipAddresses: $outputs.get(format('{0}-PublicIp', $this.name))
       - $.floatingIpAddress: $outputs.get(format('{0}-FloatingIPaddress', $this.name))
       - $.environment.instanceNotifier.trackApplication($this)
+
+  ensureNetworksDeployed:
+    Body:
+      - If: $.networks.useEnvironmentNetwork and $.environment.defaultNetworks.environment!=null
+        Then:
+          - $.environment.defaultNetworks.environment.deploy()
+      - If: $.networks.useFlatNetwork and $.environment.defaultNetworks.flat!=null
+        Then:
+          - $.environment.defaultNetworks.flat.deploy()
+      - $.networks.customNetworks.pselect($.deploy())
 
   joinNet:
     Arguments:
