@@ -60,13 +60,15 @@ Workflow:
     Body:
       - $.ensureNetworkConfigured()
       - $portname: $instance.name + '-port-to-' + $.id()
+      - $netResName: $.name + '-net-' + $.id()
+      - $subnetResName: $.name + '-subnet-' + $.id()
       - $template:
           Resources:
             $portname:
               Type: 'OS::Neutron::Port'
               Properties:
-                network_id: {Ref: $.net_res_name}
-                fixed_ips: [{subnet_id: {Ref: $.subnet_res_name}}]
+                network_id: { get_resource: $netResName }
+                fixed_ips: [{ subnet_id: { get_resource: $subnetResName } }]
                 security_groups:
                   - Ref: $securityGroupName
             $instance.name:
@@ -111,8 +113,6 @@ Workflow:
             Then:
               - $.dnsNameserver: $.netExplorer.getDefaultDns()
 
-          - $.net_res_name: $.name + '-net-' + $.id()
-          - $.subnet_res_name: $.name + '-subnet-' + $.id()
           - $.createNetwork()
           - If: $.autoUplink and (not bool($.externalRouterId))
             Then:
@@ -131,22 +131,25 @@ Workflow:
 
   createNetwork:
     Body:
+      - $netResName: $.name + '-net-' + $.id()
       - $template:
           Resources:
-            $.net_res_name:
-              Type: 'OS::Neutron::Net'
+            $netResName:
+              type: 'OS::Neutron::Net'
               Properties:
                 name: $.name
       - $.environment.stack.updateTemplate($template)
 
   createSubnet:
     Body:
+      - $subnetResName: $.name + '-subnet-' + $.id()
+      - $netResName: $.name + '-net-' + $.id()
       - $template:
           Resources:
-            $.subnet_res_name:
-              Type: 'OS::Neutron::Subnet'
+            $subnetResName:
+              type: 'OS::Neutron::Subnet'
               Properties:
-                network_id: {Ref: $.net_res_name}
+                network_id: {Ref: $netResName}
                 ip_version: 4
                 dns_nameservers: [$.dnsNameserver]
                 cidr: $.subnetCidr
@@ -154,11 +157,12 @@ Workflow:
 
   createRouterInterface:
     Body:
+      - $subnetResName: $.name + '-subnet-' + $.id()
       - $template:
           Resources:
             $.name + '-ri-' + $.id():
               Type: 'OS::Neutron::RouterInterface'
               Properties:
                 router_id: $.externalRouterId
-                subnet_id: {Ref: $.subnet_res_name}
+                subnet_id: {Ref: $subnetResName}
       - $.environment.stack.updateTemplate($template)
