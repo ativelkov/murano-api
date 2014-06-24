@@ -89,7 +89,7 @@ Workflow:
       - $outputs: $.environment.stack.output()
       - $.ipAddresses: $outputs.get(format('{0}-PublicIp', $this.name))
       - $.floatingIpAddress: $outputs.get(format('{0}-FloatingIPaddress', $this.name))
-      - $.environment.instanceNotifier.trackApplication($this)
+      - $.environment.instanceNotifier.trackCloudInstance($this)
 
   ensureNetworksDeployed:
     Body:
