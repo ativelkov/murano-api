@@ -67,8 +67,8 @@ Workflow:
             $portname:
               Type: 'OS::Neutron::Port'
               Properties:
-                network_id: { get_resource: $netResName }
-                fixed_ips: [{ subnet_id: { get_resource: $subnetResName } }]
+                network_id: { Ref: $netResName }
+                fixed_ips: [{ subnet_id: { Ref: $subnetResName } }]
                 security_groups:
                   - Ref: $securityGroupName
             $instance.name:
@@ -135,7 +135,7 @@ Workflow:
       - $template:
           Resources:
             $netResName:
-              type: 'OS::Neutron::Net'
+              Type: 'OS::Neutron::Net'
               Properties:
                 name: $.name
       - $.environment.stack.updateTemplate($template)
@@ -147,7 +147,7 @@ Workflow:
       - $template:
           Resources:
             $subnetResName:
-              type: 'OS::Neutron::Subnet'
+              Type: 'OS::Neutron::Subnet'
               Properties:
                 network_id: {Ref: $netResName}
                 ip_version: 4

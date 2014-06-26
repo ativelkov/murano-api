@@ -21,7 +21,7 @@ import muranoapi.dsl.murano_object as murano_object
 
 
 class ResourceManager(murano_object.MuranoObject):
-    def initialize(self, package_loader, _context, _class):
+    def initialize(self, package_loader, _context):
         murano_class = helpers.get_type(_context)
         self._package = package_loader.get_package(murano_class.package.name)
 
