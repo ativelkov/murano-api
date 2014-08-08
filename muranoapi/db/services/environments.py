@@ -212,13 +212,14 @@ class EnvironmentServices(object):
         # such changes, so we have to create the objects on the API side
         return {
             'defaultNetworks': {
-                'environment': {
-                    '?': {
-                        'id': uuidutils.generate_uuid(),
-                        'type': DEFAULT_NETWORKS['environment']
-                    },
-                    'name': env_name + '-network'
-                },
-                'flat': None
+                # 'environment': {
+                #     '?': {
+                #         'id': uuidutils.generate_uuid(),
+                #         'type': DEFAULT_NETWORKS['environment']
+                #     },
+                #     'name': env_name + '-network'
+                # },
+                'flat': None,
+                'environment': None
             }
         }

@@ -19,6 +19,8 @@ Classes:
   io.murano.Application: Application.yaml
 
   io.murano.system.SecurityGroupManager: SecurityGroupManager.yaml
+  io.murano.system.NeutronSecurityGroupManager: NeutronSecurityGroupManager.yaml
+  io.murano.system.AWSSecurityGroupManager: AWSSecurityGroupManager.yaml
 
   io.murano.resources.Network: resources/Network.yaml
   io.murano.resources.Instance: resources/Instance.yaml

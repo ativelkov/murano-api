@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 import eventlet
 import heatclient.client as hclient
 import heatclient.exc as heat_exc
 import keystoneclient.v2_0.client as ksclient
+
 
 import muranoapi.common.config as config
 import muranoapi.dsl.helpers as helpers
@@ -165,7 +168,8 @@ class HeatStack(murano_object.MuranoObject):
         if self._applied or self._template is None:
             return
 
-        log.info('Pushing: {0}'.format(self._template))
+        template_json = json.dumps(self._template)
+        log.info('Pushing: {0}'.format(template_json))
 
         current_status = self._get_status()
         if current_status == 'NOT_FOUND':
