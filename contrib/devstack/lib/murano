@@ -178,12 +178,8 @@ function init_murano() {
 
 
 function install_murano_pythonclient() {
-    if [ -n "$MURANO_PYTHONCLIENT_PYPI_VERSION" ]; then
-        sudo pip install --upgrade python-muranoclient==$MURANO_PYTHONCLIENT_PYPI_VERSION
-    else
-        git_clone $MURANO_PYTHONCLIENT_REPO $MURANO_PYTHONCLIENT_DIR $MURANO_PYTHONCLIENT_BRANCH
-        setup_package $MURANO_PYTHONCLIENT_DIR -e
-    fi
+    git_clone $MURANO_PYTHONCLIENT_REPO $MURANO_PYTHONCLIENT_DIR $MURANO_PYTHONCLIENT_BRANCH
+    setup_package $MURANO_PYTHONCLIENT_DIR -e
 }
 
 
