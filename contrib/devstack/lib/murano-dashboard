@@ -28,7 +28,7 @@ HORIZON_LOCAL_CONFIG=${HORIZON_LOCAL_CONFIG:-$HORIZON_DIR/openstack_dashboard/lo
 
 # Set up default repos
 MURANO_DASHBOARD_REPO=${MURANO_DASHBOARD_REPO:-${GIT_BASE}/stackforge/murano-dashboard.git}
-MURANO_DASHBOARD_BRANCH=${MURANO_DASHBOARD_BRANCH:-$MURANO_BRANCH}
+MURANO_DASHBOARD_BRANCH=${MURANO_DASHBOARD_BRANCH:-master}
 MURANO_DASHBOARD_DIR=$DEST/murano-dashboard
 
 # Set up default directories
@@ -130,8 +130,6 @@ function init_murano_dashboard() {
 # install_murano_dashboard() - Collect source and prepare
 function install_murano_dashboard() {
     echo_summary "Install Murano Dashboard"
-
-    install_murano_pythonclient
 
     git_clone $MURANO_DASHBOARD_REPO $MURANO_DASHBOARD_DIR $MURANO_DASHBOARD_BRANCH
     # TODO(dteselkin): use setup_develop once Murano requirements match with global-requirement.txt

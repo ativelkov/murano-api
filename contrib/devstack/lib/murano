@@ -21,14 +21,13 @@ set -o xtrace
 # --------
 
 # Set up default repos
-MURANO_REPO=${MURANO_REPO:-${GIT_BASE}/stackforge/murano-api.git}
+MURANO_REPO=${MURANO_REPO:-${GIT_BASE}/stackforge/murano.git}
 MURANO_BRANCH=${MURANO_BRANCH:-master}
-MURANO_DIR=$DEST/murano-api
+MURANO_DIR=$DEST/murano
 
 MURANO_PYTHONCLIENT_REPO=${MURANO_PYTHONCLIENT_REPO:-${GIT_BASE}/stackforge/python-muranoclient.git}
-MURANO_PYTHONCLIENT_BRANCH=${MURANO_PYTHONCLIENT_BRANCH:-$MURANO_BRANCH}
-MURANO_PYTHONCLIENT_DIR=$DEST/murano-pythonclient
-MURANO_PYTHONCLIENT_PYPI_VERSION=${MURANO_PYTHONCLIENT_PYPI_VERSION:-''}
+MURANO_PYTHONCLIENT_BRANCH=${MURANO_PYTHONCLIENT_BRANCH:-master}
+MURANO_PYTHONCLIENT_DIR=$DEST/python-muranoclient
 
 # Set up default directories
 MURANO_CONF_DIR=${MURANO_CONF_DIR:-/etc/murano}
@@ -106,6 +105,25 @@ function mkdir_chown_stack {
     sudo chown $STACK_USER "$1"
 }
 
+
+function configure_murano_rpc_backend() {
+    # Configure the rpc service.
+    iniset_rpc_backend muranoapi $MURANO_CONF_FILE DEFAULT
+
+    # TODO(ruhe): get rid of this ugly workaround.
+    inicomment $MURANO_CONF_FILE DEFAULT rpc_backend
+
+    iniset $MURANO_CONF_FILE rabbitmq host $RABBIT_HOST
+    iniset $MURANO_CONF_FILE rabbitmq password $RABBIT_PASSWORD
+
+    # Set non-default rabbit virtual host if required.
+    if [[ -n "$MURANO_RABBIT_VHOST" ]]; then
+        iniset $MURANO_CONF_FILE DEFAULT rabbit_virtual_host $MURANO_RABBIT_VHOST
+        iniset $MURANO_CONF_FILE rabbitmq virtual_host $MURANO_RABBIT_VHOST
+    fi
+}
+
+
 # Entry points
 # ------------
 
@@ -133,22 +151,19 @@ function configure_murano {
     iniset $MURANO_CONF_FILE keystone_authtoken admin_user $MURANO_ADMIN_USER
     iniset $MURANO_CONF_FILE keystone_authtoken admin_password $SERVICE_PASSWORD
 
-    # configure the rpc service.
-    iniset_rpc_backend muranoapi $MURANO_CONF_FILE DEFAULT
+    configure_murano_rpc_backend
 
-    # TODO(ruhe): get rid of this ugly workaround
-    inicomment $MURANO_CONF_FILE DEFAULT rpc_backend
-
-    # Set non-default rabbit virtual host if required
-    if [[ -n "$MURANO_RABBIT_VHOST" ]]; then
-        iniset $MURANO_CONF_FILE DEFAULT rabbit_virtual_host $MURANO_RABBIT_VHOST
-    fi
+    # Configure notifications for status information during provisioning
+    iniset $MURANO_CONF_FILE DEFAULT notification_driver messagingv2
 
     # configure the database.
     iniset $MURANO_CONF_FILE database connection `database_connection_url murano`
 
     # Configure keystone auth url
     iniset $MURANO_CONF_FILE keystone auth_url "http://${KEYSTONE_AUTH_HOST}:5000/v2.0"
+
+    # Configure Murano API URL
+    iniset $MURANO_CONF_FILE murano url "http://127.0.0.1:8082"
 }
 
 
@@ -167,7 +182,7 @@ function install_murano_pythonclient() {
         sudo pip install --upgrade python-muranoclient==$MURANO_PYTHONCLIENT_PYPI_VERSION
     else
         git_clone $MURANO_PYTHONCLIENT_REPO $MURANO_PYTHONCLIENT_DIR $MURANO_PYTHONCLIENT_BRANCH
-        setup_develop $MURANO_PYTHONCLIENT_DIR
+        setup_package $MURANO_PYTHONCLIENT_DIR -e
     fi
 }
 
@@ -196,6 +211,7 @@ function start_murano() {
 function stop_murano() {
     # Kill the Murano screen windows
     screen -S $SCREEN_NAME -p murano-api -X kill
+    screen -S $SCREEN_NAME -p murano-engine -X kill
 }
 
 
